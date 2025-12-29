@@ -6,14 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Form,
   FormControl,
@@ -36,7 +29,8 @@ export default function AddShop() {
     resolver: zodResolver(insertShopSchema),
     defaultValues: {
       name: "",
-      type: "Réparateur",
+      repair: false,
+      rental: false,
       address: "",
       postalCode: "",
       phone: "",
@@ -103,24 +97,26 @@ export default function AddShop() {
 
                   <FormField
                     control={form.control}
-                    name="type"
+                    name="repair"
                     render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Type de service</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
-                          <FormControl>
-                            <SelectTrigger className="bg-background">
-                              <SelectValue placeholder="Sélectionnez un type" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            <SelectItem value="Réparateur">Réparateur</SelectItem>
-                            <SelectItem value="Location">Location</SelectItem>
-                            <SelectItem value="Vente & Réparation">Vente & Réparation</SelectItem>
-                            <SelectItem value="Atelier associatif">Atelier associatif</SelectItem>
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
+                      <FormItem className="flex items-center space-x-2 mt-2">
+                        <FormControl>
+                          <Checkbox checked={field.value} onCheckedChange={field.onChange} />
+                        </FormControl>
+                        <FormLabel className="font-normal cursor-pointer">Réparation</FormLabel>
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="rental"
+                    render={({ field }) => (
+                      <FormItem className="flex items-center space-x-2 mt-2">
+                        <FormControl>
+                          <Checkbox checked={field.value} onCheckedChange={field.onChange} />
+                        </FormControl>
+                        <FormLabel className="font-normal cursor-pointer">Location</FormLabel>
                       </FormItem>
                     )}
                   />

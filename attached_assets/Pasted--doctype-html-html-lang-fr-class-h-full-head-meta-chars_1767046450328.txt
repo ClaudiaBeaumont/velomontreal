@@ -1,0 +1,318 @@
+<!doctype html>
+<html lang="fr" class="h-full">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Répertoire Vélo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      body { box-sizing: border-box; }
+      .custom-font {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      }
+    </style>
+  </head>
+
+  <body class="h-full custom-font">
+    <div id="app" class="w-full h-full overflow-auto"></div>
+
+    <script>
+      "use strict";
+
+      const config = {
+        background_color: "#FAF8F5",
+        surface_color: "#FFFFFF",
+        text_color: "#2D3319",
+        primary_color: "#5B7C4F",
+        secondary_color: "#8B7355",
+        font_family: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+        font_size: 16,
+        site_title: "Répertoire Vélo",
+        tagline: "Trouvez votre réparateur ou location de vélo près de chez vous",
+        tile1_title: "🔧 Réparation rapide",
+        tile1_text: "Professionnels qualifiés pour tous types de vélos",
+        tile2_title: "🚲 Location flexible",
+        tile2_text: "Louez à l'heure, à la journée ou au mois",
+        tile3_title: "⚙️ Entretien pro",
+        tile3_text: "Services d'entretien et révision complète"
+      };
+
+      // Données temporaires
+      // Important: on normalise le type en flags repair / rental
+      let currentData = [
+        {
+          id: "1",
+          name: "Atelier Vélo Plateau",
+          services: { repair: true, rental: false },
+          address: "123 av. du Mont-Royal E, Montréal",
+          postal_code: "H2J 1X1",
+          phone: "514-555-0101",
+          email: "contact@atelierplateau.ca"
+        },
+        {
+          id: "2",
+          name: "Vélo Service Rosemont",
+          services: { repair: true, rental: true },
+          address: "456 rue Beaubien E, Montréal",
+          postal_code: "H2G 1M1",
+          phone: "514-555-0202",
+          email: "info@veloservicerosemont.ca"
+        }
+      ];
+
+      let currentView = "home";
+      let searchResults = [];
+      let lastSearch = { postalCode: "", service: "repair", radiusKm: 10 };
+
+      function escapeHtml(str) {
+        return String(str)
+          .replaceAll("&", "&amp;")
+          .replaceAll("<", "&lt;")
+          .replaceAll(">", "&gt;")
+          .replaceAll('"', "&quot;")
+          .replaceAll("'", "&#039;");
+      }
+
+      function normalizePostalCode(value) {
+        return String(value || "")
+          .toUpperCase()
+          .replace(/\s+/g, "")
+          .trim();
+      }
+
+      function isValidCanadianPostalCode(pc) {
+        // A1A1A1 sans espace
+        return /^[ABCEGHJ-NPRSTVXY]\d[ABCEGHJ-NPRSTV-Z]\d[ABCEGHJ-NPRSTV-Z]\d$/.test(pc);
+      }
+
+      function getServiceLabel(serviceValue) {
+        if (serviceValue === "repair") return "Réparation";
+        if (serviceValue === "rental") return "Location";
+        return "Réparation";
+      }
+
+      function navigateTo(view) {
+        currentView = view;
+        renderApp();
+      }
+
+      // V1: filtre simple "par service" seulement
+      // La vraie logique "10 km" viendra quand tu auras lat / lon
+      function handleSearch(event) {
+        event.preventDefault();
+
+        const postalRaw = document.getElementById("postalInput")?.value || "";
+        const serviceValue = document.getElementById("serviceSelect")?.value || "repair";
+
+        const postalCode = normalizePostalCode(postalRaw);
+        lastSearch = { postalCode, service: serviceValue, radiusKm: 10 };
+
+        const errorEl = document.getElementById("searchError");
+        if (errorEl) errorEl.textContent = "";
+
+        if (!postalCode) {
+          if (errorEl) errorEl.textContent = "Veuillez entrer un code postal.";
+          return;
+        }
+
+        // On garde la validation canadienne, mais tu peux l'assouplir si tu vises aussi USA
+        if (!isValidCanadianPostalCode(postalCode)) {
+          if (errorEl) errorEl.textContent = "Code postal invalide. Exemple: H2X1Y4";
+          return;
+        }
+
+        // Filtre service
+        searchResults = currentData.filter((shop) => {
+          const hasRepair = !!shop?.services?.repair;
+          const hasRental = !!shop?.services?.rental;
+          if (serviceValue === "repair") return hasRepair;
+          if (serviceValue === "rental") return hasRental;
+          return true;
+        });
+
+        currentView = "directory";
+        renderApp();
+      }
+
+      function renderTiles(baseSize) {
+        return `
+          <section style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; margin-top: 3.5rem;">
+            ${renderTile(config.tile1_title, config.tile1_text, baseSize)}
+            ${renderTile(config.tile2_title, config.tile2_text, baseSize)}
+            ${renderTile(config.tile3_title, config.tile3_text, baseSize)}
+          </section>
+        `;
+      }
+
+      function renderTile(title, text, baseSize) {
+        return `
+          <div style="background: ${config.surface_color}; border: 1px solid rgba(0,0,0,0.08); border-radius: 16px; padding: 1.5rem;">
+            <div style="font-size: ${baseSize * 1.1}px; font-weight: 700; margin-bottom: 0.5rem; color: ${config.text_color};">
+              ${escapeHtml(title)}
+            </div>
+            <div style="font-size: ${baseSize}px; opacity: 0.85; line-height: 1.45;">
+              ${escapeHtml(text)}
+            </div>
+          </div>
+        `;
+      }
+
+      function renderDirectory(baseSize) {
+        const title = `Résultats pour ${escapeHtml(getServiceLabel(lastSearch.service))}`;
+        const subtitle = `Rayon: ${lastSearch.radiusKm} km. Code postal: ${escapeHtml(lastSearch.postalCode || "")}`;
+
+        const rows = (searchResults.length ? searchResults : currentData).map((s) => {
+          const services = [];
+          if (s.services?.repair) services.push("Réparation");
+          if (s.services?.rental) services.push("Location");
+
+          return `
+            <div style="background: ${config.surface_color}; border: 1px solid rgba(0,0,0,0.08); border-radius: 16px; padding: 1.25rem; display: grid; gap: 0.35rem;">
+              <div style="display: flex; justify-content: space-between; align-items: baseline; gap: 1rem;">
+                <div style="font-size: ${baseSize * 1.1}px; font-weight: 700; color: ${config.text_color};">
+                  ${escapeHtml(s.name)}
+                </div>
+                <div style="font-size: ${baseSize * 0.9}px; color: ${config.secondary_color}; font-weight: 600;">
+                  ${escapeHtml(services.join(" et "))}
+                </div>
+              </div>
+              <div style="opacity: 0.85;">${escapeHtml(s.address)}</div>
+              <div style="opacity: 0.85;">Code postal: ${escapeHtml(s.postal_code)}</div>
+              <div style="display: flex; gap: 1rem; flex-wrap: wrap; margin-top: 0.25rem;">
+                <div style="font-size: ${baseSize * 0.95}px;">Téléphone: ${escapeHtml(s.phone || "Non disponible")}</div>
+                <div style="font-size: ${baseSize * 0.95}px;">Email: ${escapeHtml(s.email || "Non disponible")}</div>
+              </div>
+            </div>
+          `;
+        }).join("");
+
+        return `
+          <main style="flex: 1; padding: 2.5rem 2rem; max-width: 1200px; margin: 0 auto; width: 100%;">
+            <div style="display: grid; gap: 0.5rem; margin-bottom: 1.25rem;">
+              <h2 style="font-size: ${baseSize * 1.35}px; font-weight: 800; margin: 0; color: ${config.text_color};">
+                ${title}
+              </h2>
+              <div style="opacity: 0.8;">${subtitle}</div>
+            </div>
+
+            <div style="display: grid; gap: 1rem;">
+              ${rows || `<div style="opacity:0.8;">Aucun commerce trouvé.</div>`}
+            </div>
+          </main>
+        `;
+      }
+
+      function renderApp() {
+        const app = document.getElementById("app");
+        const baseSize = config.font_size;
+
+        app.style.backgroundColor = config.background_color;
+        app.style.color = config.text_color;
+        app.style.fontFamily = config.font_family;
+
+        const nav = `
+          <nav style="background: ${config.surface_color}; border-bottom: 1px solid rgba(0,0,0,0.08); padding: 1.25rem 2rem;">
+            <div style="max-width: 1200px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center;">
+              <h1 style="font-size: ${baseSize * 1.5}px; font-weight: 700; color: ${config.primary_color}; margin: 0;">
+                ${escapeHtml(config.site_title)}
+              </h1>
+              <div style="display: flex; gap: 2rem;">
+                <button onclick="navigateTo('home')" style="font-size: ${baseSize}px; color: ${config.primary_color}; background: none; border: none; cursor: pointer; font-weight: 600; padding: 0;">
+                  Accueil
+                </button>
+                <button onclick="navigateTo('directory')" style="font-size: ${baseSize}px; color: ${config.text_color}; background: none; border: none; cursor: pointer; padding: 0;">
+                  Répertoire
+                </button>
+                <button onclick="navigateTo('add')" style="font-size: ${baseSize}px; color: ${config.text_color}; background: none; border: none; cursor: pointer; padding: 0;">
+                  Ajouter
+                </button>
+              </div>
+            </div>
+          </nav>
+        `;
+
+        if (currentView === "home") {
+          app.innerHTML = `
+            <div style="min-height: 100%; display: flex; flex-direction: column;">
+              ${nav}
+
+              <main style="flex: 1; padding: 4rem 2rem; max-width: 1200px; margin: 0 auto; width: 100%;">
+                <div style="text-align: center; margin-bottom: 2.25rem;">
+                  <p style="font-size: ${baseSize * 1.25}px; color: ${config.text_color}; opacity: 0.8; margin-bottom: 1.5rem;">
+                    ${escapeHtml(config.tagline)}
+                  </p>
+
+                  <div style="max-width: 720px; margin: 0 auto;">
+                    <form onsubmit="handleSearch(event)" style="display: grid; gap: 0.75rem;">
+                      <div style="display: grid; grid-template-columns: 220px 1fr; gap: 0.75rem;">
+                        <select
+                          id="serviceSelect"
+                          style="padding: 0.9rem 1rem; border-radius: 14px; border: 1px solid rgba(0,0,0,0.15); background: ${config.surface_color}; font-size: ${baseSize}px;"
+                          aria-label="Choisir un service"
+                        >
+                          <option value="repair">Réparation</option>
+                          <option value="rental">Location</option>
+                        </select>
+
+                        <input
+                          id="postalInput"
+                          type="text"
+                          inputmode="text"
+                          autocomplete="postal-code"
+                          placeholder="Entrez votre code postal (rayon de 10 km ou moins). Exemple: H2X 1Y4"
+                          style="padding: 0.9rem 1rem; border-radius: 14px; border: 1px solid rgba(0,0,0,0.15); width: 100%; font-size: ${baseSize}px;"
+                        />
+                      </div>
+
+                      <div id="searchError" style="min-height: 1.2em; color: #8A1F1F; font-weight: 600;"></div>
+
+                      <button
+                        type="submit"
+                        style="padding: 0.9rem 1.2rem; border-radius: 14px; border: none; background: ${config.primary_color}; color: white; font-size: ${baseSize}px; font-weight: 700; cursor: pointer;"
+                      >
+                        Rechercher
+                      </button>
+                    </form>
+                  </div>
+
+                  ${renderTiles(baseSize)}
+                </div>
+              </main>
+            </div>
+          `;
+          return;
+        }
+
+        if (currentView === "directory") {
+          app.innerHTML = `
+            <div style="min-height: 100%; display: flex; flex-direction: column;">
+              ${nav}
+              ${renderDirectory(baseSize)}
+            </div>
+          `;
+          return;
+        }
+
+        // Placeholder minimal pour "add" afin d'éviter une page vide
+        if (currentView === "add") {
+          app.innerHTML = `
+            <div style="min-height: 100%; display: flex; flex-direction: column;">
+              ${nav}
+              <main style="flex: 1; padding: 2.5rem 2rem; max-width: 1200px; margin: 0 auto; width: 100%;">
+                <h2 style="font-size: ${baseSize * 1.35}px; font-weight: 800; margin: 0 0 0.75rem 0;">
+                  Ajouter un commerce
+                </h2>
+                <div style="opacity: 0.85; max-width: 720px; line-height: 1.5;">
+                  V1: cette section servira à créer une fiche commerce et à géocoder l'adresse pour stocker latitude et longitude.
+                </div>
+              </main>
+            </div>
+          `;
+          return;
+        }
+      }
+
+      renderApp();
+    </script>
+  </body>
+</html>

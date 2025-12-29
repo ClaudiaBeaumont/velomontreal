@@ -14,16 +14,19 @@ function parseWithLogging<T>(schema: z.ZodSchema<T>, data: unknown, label: strin
   return result.data;
 }
 
-export function useShops(search?: string) {
-  const queryKey = search ? [api.shops.list.path, { search }] : [api.shops.list.path];
+export function useShops(postalCode?: string, service?: string) {
+  const queryKey = [api.shops.list.path, { postalCode, service }];
   
   return useQuery({
     queryKey,
     queryFn: async () => {
       // Build URL with query params
       const url = new URL(api.shops.list.path, window.location.origin);
-      if (search) {
-        url.searchParams.append("search", search);
+      if (postalCode) {
+        url.searchParams.append("postalCode", postalCode);
+      }
+      if (service) {
+        url.searchParams.append("service", service);
       }
 
       const res = await fetch(url.toString(), { credentials: "include" });

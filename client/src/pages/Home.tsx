@@ -4,18 +4,27 @@ import { Input } from "@/components/ui/input";
 import { Link, useLocation } from "wouter";
 import { Wrench, Bike, ShieldCheck, Search, ArrowRight } from "lucide-react";
 import { useState } from "react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 export default function Home() {
   const [postalCode, setPostalCode] = useState("");
+  const [service, setService] = useState("repair");
   const [, setLocation] = useLocation();
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
+    const params = new URLSearchParams();
     if (postalCode.trim()) {
-      setLocation(`/directory?search=${encodeURIComponent(postalCode)}`);
-    } else {
-      setLocation("/directory");
+      params.append("postalCode", postalCode);
     }
+    params.append("service", service);
+    setLocation(`/directory?${params.toString()}`);
   };
 
   return (
@@ -40,17 +49,28 @@ export default function Home() {
               Une communauté de passionnés à votre service.
             </p>
 
-            <form onSubmit={handleSearch} className="mx-auto flex w-full max-w-md flex-col gap-4 sm:flex-row sm:items-center">
-              <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
-                <Input 
-                  placeholder="Code postal (ex: 75001)" 
-                  className="h-12 w-full pl-10 rounded-xl border-2 border-border/60 bg-white text-base shadow-sm focus-visible:border-primary focus-visible:ring-primary/20"
-                  value={postalCode}
-                  onChange={(e) => setPostalCode(e.target.value)}
-                />
+            <form onSubmit={handleSearch} className="mx-auto flex w-full max-w-2xl flex-col gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 items-end">
+                <Select value={service} onValueChange={setService}>
+                  <SelectTrigger className="h-12 rounded-xl border-2 border-border/60 bg-white text-base">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="repair">Réparation</SelectItem>
+                    <SelectItem value="rental">Location</SelectItem>
+                  </SelectContent>
+                </Select>
+                <div className="relative sm:col-span-2">
+                  <Search className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
+                  <Input 
+                    placeholder="Code postal (ex: H2X1Y4)" 
+                    className="h-12 w-full pl-10 rounded-xl border-2 border-border/60 bg-white text-base shadow-sm focus-visible:border-primary focus-visible:ring-primary/20"
+                    value={postalCode}
+                    onChange={(e) => setPostalCode(e.target.value)}
+                  />
+                </div>
               </div>
-              <Button type="submit" size="lg" className="h-12 rounded-xl bg-primary px-8 text-base font-semibold shadow-lg shadow-primary/25 hover:bg-primary/90 hover:shadow-xl hover:-translate-y-0.5 transition-all">
+              <Button type="submit" className="w-full h-12 rounded-xl bg-primary px-8 text-base font-semibold shadow-lg shadow-primary/25 hover:bg-primary/90">
                 Rechercher
               </Button>
             </form>

@@ -9,8 +9,9 @@ export async function registerRoutes(
   app: Express
 ): Promise<Server> {
   app.get(api.shops.list.path, async (req, res) => {
-    const search = req.query.search as string | undefined;
-    const shops = await storage.getShops(search);
+    const service = req.query.service as string | undefined;
+    const postalCode = req.query.postalCode as string | undefined;
+    const shops = await storage.getShops(service, postalCode);
     res.json(shops);
   });
 
@@ -37,17 +38,19 @@ export async function registerRoutes(
       console.log("Seeding database...");
       await storage.createShop({
         name: "Atelier Vélo Plateau",
-        type: "Réparation",
+        repair: true,
+        rental: false,
         address: "123 av. du Mont-Royal E, Montréal",
-        postalCode: "H2J 1X1",
+        postalCode: "H2J1X1",
         phone: "514-555-0101",
         email: "contact@atelierplateau.ca"
       });
       await storage.createShop({
         name: "Vélo Service Rosemont",
-        type: "Réparation et Location",
+        repair: true,
+        rental: true,
         address: "456 rue Beaubien E, Montréal",
-        postalCode: "H2G 1M1",
+        postalCode: "H2G1M1",
         phone: "514-555-0202",
         email: "info@veloservicerosemont.ca"
       });

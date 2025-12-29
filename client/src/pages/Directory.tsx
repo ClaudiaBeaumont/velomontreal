@@ -9,10 +9,12 @@ import { useLocation } from "wouter";
 export default function Directory() {
   const [location] = useLocation();
   const searchParams = new URLSearchParams(window.location.search);
-  const initialSearch = searchParams.get("search") || "";
+  const initialPostalCode = searchParams.get("postalCode") || "";
+  const initialService = searchParams.get("service") || "repair";
   
-  const [searchTerm, setSearchTerm] = useState(initialSearch);
-  const [debouncedSearch, setDebouncedSearch] = useState(initialSearch);
+  const [searchTerm, setSearchTerm] = useState(initialPostalCode);
+  const [debouncedSearch, setDebouncedSearch] = useState(initialPostalCode);
+  const [service] = useState(initialService);
 
   // Debounce search input
   useEffect(() => {
@@ -22,7 +24,7 @@ export default function Directory() {
     return () => clearTimeout(timer);
   }, [searchTerm]);
 
-  const { data: shops, isLoading, error } = useShops(debouncedSearch);
+  const { data: shops, isLoading, error } = useShops(debouncedSearch, service);
 
   return (
     <div className="min-h-screen bg-background flex flex-col">

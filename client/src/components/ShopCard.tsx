@@ -1,36 +1,37 @@
 import { Shop } from "@shared/schema";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { MapPin, Phone, Mail, Wrench, Bike, ShoppingBag } from "lucide-react";
+import { MapPin, Phone, Mail, Wrench, Bike } from "lucide-react";
 
 interface ShopCardProps {
   shop: Shop;
 }
 
 export function ShopCard({ shop }: ShopCardProps) {
-  // Determine icon based on shop type (simple heuristic)
-  const getIcon = () => {
-    const type = shop.type.toLowerCase();
-    if (type.includes("réparation")) return <Wrench className="h-4 w-4" />;
-    if (type.includes("location")) return <Bike className="h-4 w-4" />;
-    return <ShoppingBag className="h-4 w-4" />;
-  };
+  const services = [];
+  if (shop.repair) services.push({ label: "Réparation", icon: <Wrench className="h-4 w-4" /> });
+  if (shop.rental) services.push({ label: "Location", icon: <Bike className="h-4 w-4" /> });
 
   return (
     <Card className="group h-full flex flex-col overflow-hidden border-border/60 bg-white/50 shadow-sm transition-all duration-300 hover:shadow-lg hover:shadow-primary/5 hover:-translate-y-1 hover:border-primary/30">
       <CardHeader className="relative p-6 pb-2">
         <div className="flex items-start justify-between gap-4">
-          <div className="space-y-1">
+          <div className="space-y-2 flex-1">
             <h3 className="font-serif text-xl font-bold text-foreground group-hover:text-primary transition-colors">
               {shop.name}
             </h3>
-            <Badge 
-              variant="secondary" 
-              className="mt-2 bg-secondary/10 text-secondary hover:bg-secondary/20 flex w-fit items-center gap-1.5 px-3 py-1 font-medium"
-            >
-              {getIcon()}
-              {shop.type}
-            </Badge>
+            <div className="flex flex-wrap gap-2">
+              {services.map((service) => (
+                <Badge 
+                  key={service.label}
+                  variant="secondary" 
+                  className="bg-secondary/10 text-secondary hover:bg-secondary/20 flex items-center gap-1.5 px-3 py-1 font-medium"
+                >
+                  {service.icon}
+                  {service.label}
+                </Badge>
+              ))}
+            </div>
           </div>
         </div>
       </CardHeader>

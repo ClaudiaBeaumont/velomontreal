@@ -1,24 +1,36 @@
 import { db } from "./db";
 import { shops, type InsertShop, type Shop } from "@shared/schema";
-import { ilike, or } from "drizzle-orm";
+import { ilike, or, and } from "drizzle-orm";
 
 export interface IStorage {
-  getShops(search?: string): Promise<Shop[]>;
+  getShops(service?: string, postalCode?: string): Promise<Shop[]>;
   createShop(shop: InsertShop): Promise<Shop>;
 }
 
 export class DatabaseStorage implements IStorage {
-  async getShops(search?: string): Promise<Shop[]> {
-    if (!search) return await db.select().from(shops);
-    
-    // Simple search on postal code or name
-    const searchPattern = `%${search}%`;
-    return await db.select().from(shops).where(
-      or(
-        ilike(shops.postalCode, searchPattern),
-        ilike(shops.name, searchPattern)
-      )
-    );
+  async getShops(service?: string, postalCode?: string): Promise<Shop[]> {
+    let query = db.select().from(shops);
+
+    const conditions = [];
+
+    // Filter by service type
+    if (service === 'repair') {
+      conditions.push(shops.repair.eq(true));
+    } else if (service === 'rental') {
+      conditions.push(shops.rental.eq(true));
+    }
+
+    // Filter by postal code (contains)
+    if (postalCode) {
+      const searchPattern = `%${postalCode}%`;
+      conditions.push(ilike(shops.postalCode, searchPattern));
+    }
+
+    if (conditions.length > 0) {
+      return await query.where(and(...conditions));
+    }
+
+    return await query;
   }
 
   async createShop(insertShop: InsertShop): Promise<Shop> {

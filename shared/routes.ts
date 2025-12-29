@@ -20,7 +20,8 @@ export const api = {
       method: 'GET' as const,
       path: '/api/shops',
       input: z.object({
-        search: z.string().optional()
+        service: z.enum(['repair', 'rental']).optional(),
+        postalCode: z.string().optional()
       }).optional(),
       responses: {
         200: z.array(z.custom<typeof shops.$inferSelect>()),

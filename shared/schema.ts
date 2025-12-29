@@ -1,11 +1,12 @@
-import { pgTable, text, serial } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, boolean } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
 export const shops = pgTable("shops", {
   id: serial("id").primaryKey(),
   name: text("name").notNull(),
-  type: text("type").notNull(),
+  repair: boolean("repair").default(false),
+  rental: boolean("rental").default(false),
   address: text("address").notNull(),
   postalCode: text("postal_code").notNull(),
   phone: text("phone").notNull(),

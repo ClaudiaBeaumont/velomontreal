@@ -15,8 +15,8 @@
   --secondary: 33 24% 44%;
   --secondary-foreground: 0 0% 100%;
 
-  /* Background Beige: #FAF8F5 -> 36 33% 97% */
-  --background: 36 33% 97%;
+  /* Background White */
+  --background: 0 0% 100%;
   --foreground: 78 34% 15%; /* Dark Green/Black #2D3319 */
 
   /* Surface White */

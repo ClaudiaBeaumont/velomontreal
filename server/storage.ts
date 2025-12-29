@@ -1,38 +1,30 @@
-import { type User, type InsertUser } from "@shared/schema";
-import { randomUUID } from "crypto";
-
-// modify the interface with any CRUD methods
-// you might need
+import { db } from "./db";
+import { shops, type InsertShop, type Shop } from "@shared/schema";
+import { ilike, or } from "drizzle-orm";
 
 export interface IStorage {
-  getUser(id: string): Promise<User | undefined>;
-  getUserByUsername(username: string): Promise<User | undefined>;
-  createUser(user: InsertUser): Promise<User>;
+  getShops(search?: string): Promise<Shop[]>;
+  createShop(shop: InsertShop): Promise<Shop>;
 }
 
-export class MemStorage implements IStorage {
-  private users: Map<string, User>;
-
-  constructor() {
-    this.users = new Map();
-  }
-
-  async getUser(id: string): Promise<User | undefined> {
-    return this.users.get(id);
-  }
-
-  async getUserByUsername(username: string): Promise<User | undefined> {
-    return Array.from(this.users.values()).find(
-      (user) => user.username === username,
+export class DatabaseStorage implements IStorage {
+  async getShops(search?: string): Promise<Shop[]> {
+    if (!search) return await db.select().from(shops);
+    
+    // Simple search on postal code or name
+    const searchPattern = `%${search}%`;
+    return await db.select().from(shops).where(
+      or(
+        ilike(shops.postalCode, searchPattern),
+        ilike(shops.name, searchPattern)
+      )
     );
   }
 
-  async createUser(insertUser: InsertUser): Promise<User> {
-    const id = randomUUID();
-    const user: User = { ...insertUser, id };
-    this.users.set(id, user);
-    return user;
+  async createShop(insertShop: InsertShop): Promise<Shop> {
+    const [shop] = await db.insert(shops).values(insertShop).returning();
+    return shop;
   }
 }
 
-export const storage = new MemStorage();
+export const storage = new DatabaseStorage();

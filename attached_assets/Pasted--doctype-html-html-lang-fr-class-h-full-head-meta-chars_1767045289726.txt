@@ -1,0 +1,498 @@
+<!doctype html>
+<html lang="fr" class="h-full">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Répertoire Vélo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      body { box-sizing: border-box; }
+      .custom-font {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      }
+    </style>
+  </head>
+
+  <body class="h-full custom-font">
+    <div id="app" class="w-full h-full overflow-auto"></div>
+
+    <script>
+      "use strict";
+
+      // Configuration simple (ex-Canva config)
+      const config = {
+        background_color: "#FAF8F5",
+        surface_color: "#FFFFFF",
+        text_color: "#2D3319",
+        primary_color: "#5B7C4F",
+        secondary_color: "#8B7355",
+        font_family: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+        font_size: 16,
+        site_title: "Répertoire Vélo",
+        tagline: "Trouvez votre réparateur ou location de vélo près de chez vous",
+        tile1_title: "🔧 Réparation rapide",
+        tile1_text: "Professionnels qualifiés pour tous types de vélos",
+        tile2_title: "🚲 Location flexible",
+        tile2_text: "Louez à l'heure, à la journée ou au mois",
+        tile3_title: "⚙️ Entretien pro",
+        tile3_text: "Services d'entretien et révision complète"
+      };
+
+      // Données temporaires (à remplacer par une DB / API plus tard)
+      let currentData = [
+        {
+          id: "1",
+          name: "Atelier Vélo Plateau",
+          type: "Réparation",
+          address: "123 av. du Mont-Royal E, Montréal",
+          postal_code: "H2J 1X1",
+          phone: "514-555-0101",
+          email: "contact@atelierplateau.ca"
+        },
+        {
+          id: "2",
+          name: "Vélo Service Rosemont",
+          type: "Réparation et Location",
+          address: "456 rue Beaubien E, Montréal",
+          postal_code: "H2G 1M1",
+          phone: "514-555-0202",
+          email: "info@veloservicerosemont.ca"
+        }
+      ];
+
+      let currentView = "home";
+      let searchResults = [];
+
+      function escapeHtml(str) {
+        return String(str)
+          .replaceAll("&", "&amp;")
+          .replaceAll("<", "&lt;")
+          .replaceAll(">", "&gt;")
+          .replaceAll('"', "&quot;")
+          .replaceAll("'", "&#039;");
+      }
+
+      function normalizePostalCode(value) {
+        // Format canadien: H2X 1Y4 (mais on accepte les variations)
+        return String(value || "")
+          .toUpperCase()
+          .replace(/\s+/g, "")
+          .trim();
+      }
+
+      function renderApp() {
+        const app = document.getElementById("app");
+        const baseSize = config.font_size;
+
+        app.style.backgroundColor = config.background_color;
+        app.style.color = config.text_color;
+        app.style.fontFamily = config.font_family;
+
+        if (currentView === "home") {
+          app.innerHTML = `
+            <div style="min-height: 100%; display: flex; flex-direction: column;">
+              <nav style="background: ${config.surface_color}; border-bottom: 1px solid rgba(0,0,0,0.08); padding: 1.25rem 2rem;">
+                <div style="max-width: 1200px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center;">
+                  <h1 style="font-size: ${baseSize * 1.5}px; font-weight: 700; color: ${config.primary_color}; margin: 0;">
+                    ${escapeHtml(config.site_title)}
+                  </h1>
+                  <div style="display: flex; gap: 2rem;">
+                    <button onclick="navigateTo('home')" style="font-size: ${baseSize}px; color: ${config.primary_color}; background: none; border: none; cursor: pointer; font-weight: 600; padding: 0;">
+                      Accueil
+                    </button>
+                    <button onclick="navigateTo('directory')" style="font-size: ${baseSize}px; color: ${config.text_color}; background: none; border: none; cursor: pointer; padding: 0;">
+                      Répertoire
+                    </button>
+                    <button onclick="navigateTo('add')" style="font-size: ${baseSize}px; color: ${config.text_color}; background: none; border: none; cursor: pointer; padding: 0;">
+                      Ajouter
+                    </button>
+                  </div>
+                </div>
+              </nav>
+
+              <main style="flex: 1; padding: 4rem 2rem; max-width: 1200px; margin: 0 auto; width: 100%;">
+                <div style="text-align: center; margin-bottom: 3rem;">
+                  <p style="font-size: ${baseSize * 1.25}px; color: ${config.text_color}; opacity: 0.8; margin-bottom: 3rem;">
+                    ${escapeHtml(config.tagline)}
+                  </p>
+
+                  <div style="max-width: 600px; margin: 0 auto;">
+                    <form onsubmit="handleSearch(event)" style="display: flex; gap: 0.75rem;">
+                      <input
+                        type="text"
+                        id="postalSearch"
+                        placeholder="Entrez votre code postal..."
+                        style="flex: 1; padding: 1rem 1.5rem; font-size: ${baseSize}px; border: 2px solid ${config.primary_color}; border-radius: 8px; background: ${config.surface_color}; color: ${config.text_color}; outline: none;"
+                      >
+                      <button
+                        type="submit"
+                        style="padding: 1rem 2rem; font-size: ${baseSize}px; background: ${config.primary_color}; color: ${config.surface_color}; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; transition: opacity 0.2s;"
+                        onmouseover="this.style.opacity='0.85'"
+                        onmouseout="this.style.opacity='1'"
+                      >
+                        Rechercher
+                      </button>
+                    </form>
+                    <p style="margin: 0.75rem 0 0 0; font-size: ${baseSize * 0.9}px; opacity: 0.7;">
+                      Exemple: H2X 1Y4
+                    </p>
+                  </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem; margin-top: 4rem;">
+                  ${tileHtml(config.tile1_title, config.tile1_text, baseSize)}
+                  ${tileHtml(config.tile2_title, config.tile2_text, baseSize)}
+                  ${tileHtml(config.tile3_title, config.tile3_text, baseSize)}
+                </div>
+
+                <div style="margin-top: 3.5rem; text-align: center;">
+                  <button
+                    onclick="navigateTo('directory')"
+                    style="padding: 0.9rem 1.4rem; font-size: ${baseSize}px; background: ${config.surface_color}; color: ${config.primary_color}; border: 1px solid rgba(0,0,0,0.15); border-radius: 10px; cursor: pointer; font-weight: 600;"
+                  >
+                    Voir le répertoire
+                  </button>
+                </div>
+              </main>
+            </div>
+          `;
+          return;
+        }
+
+        if (currentView === "directory") {
+          const displayData = searchResults.length > 0 ? searchResults : currentData;
+
+          app.innerHTML = `
+            <div style="min-height: 100%; display: flex; flex-direction: column;">
+              <nav style="background: ${config.surface_color}; border-bottom: 1px solid rgba(0,0,0,0.08); padding: 1.25rem 2rem;">
+                <div style="max-width: 1200px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center;">
+                  <h1 style="font-size: ${baseSize * 1.5}px; font-weight: 700; color: ${config.primary_color}; margin: 0;">
+                    ${escapeHtml(config.site_title)}
+                  </h1>
+                  <div style="display: flex; gap: 2rem;">
+                    <button onclick="navigateTo('home')" style="font-size: ${baseSize}px; color: ${config.text_color}; background: none; border: none; cursor: pointer; padding: 0;">
+                      Accueil
+                    </button>
+                    <button onclick="navigateTo('directory')" style="font-size: ${baseSize}px; color: ${config.primary_color}; background: none; border: none; cursor: pointer; font-weight: 600; padding: 0;">
+                      Répertoire
+                    </button>
+                    <button onclick="navigateTo('add')" style="font-size: ${baseSize}px; color: ${config.text_color}; background: none; border: none; cursor: pointer; padding: 0;">
+                      Ajouter
+                    </button>
+                  </div>
+                </div>
+              </nav>
+
+              <main style="flex: 1; padding: 3rem 2rem; max-width: 1200px; margin: 0 auto; width: 100%;">
+                <div style="margin-bottom: 1.25rem; display: flex; justify-content: space-between; align-items: end; gap: 1rem; flex-wrap: wrap;">
+                  <div>
+                    <h2 style="font-size: ${baseSize * 1.75}px; font-weight: 700; color: ${config.text_color}; margin: 0 0 0.5rem 0;">
+                      ${searchResults.length > 0 ? "Résultats de recherche" : "Tous les établissements"}
+                    </h2>
+                    <p style="margin: 0; font-size: ${baseSize * 0.95}px; opacity: 0.75;">
+                      ${displayData.length} établissement(s)
+                    </p>
+                  </div>
+
+                  <div style="display: flex; gap: 0.75rem; align-items: center;">
+                    ${
+                      searchResults.length > 0
+                        ? `<button onclick="clearSearch()" style="font-size: ${baseSize * 0.9}px; color: ${config.primary_color}; background: none; border: none; cursor: pointer; text-decoration: underline; padding: 0;">
+                            Effacer la recherche
+                          </button>`
+                        : ""
+                    }
+                    <button
+                      onclick="navigateTo('add')"
+                      style="padding: 0.7rem 1rem; font-size: ${baseSize * 0.95}px; background: ${config.primary_color}; color: ${config.surface_color}; border: none; border-radius: 10px; cursor: pointer; font-weight: 600;"
+                    >
+                      Ajouter un établissement
+                    </button>
+                  </div>
+                </div>
+
+                <div style="margin: 1.5rem 0 2rem 0;">
+                  <form onsubmit="handleDirectorySearch(event)" style="display: flex; gap: 0.75rem; max-width: 520px;">
+                    <input
+                      type="text"
+                      id="postalSearchDirectory"
+                      placeholder="Rechercher par code postal..."
+                      style="flex: 1; padding: 0.8rem 1rem; font-size: ${baseSize}px; border: 1px solid rgba(0,0,0,0.18); border-radius: 10px; background: ${config.surface_color}; color: ${config.text_color}; outline: none;"
+                    >
+                    <button
+                      type="submit"
+                      style="padding: 0.8rem 1rem; font-size: ${baseSize}px; background: ${config.surface_color}; color: ${config.primary_color}; border: 1px solid rgba(0,0,0,0.18); border-radius: 10px; cursor: pointer; font-weight: 600;"
+                    >
+                      Filtrer
+                    </button>
+                  </form>
+                </div>
+
+                ${
+                  displayData.length === 0
+                    ? `<div style="text-align: center; padding: 4rem 2rem;">
+                        <p style="font-size: ${baseSize * 1.1}px; opacity: 0.65;">
+                          ${searchResults.length > 0 ? "Aucun résultat trouvé pour cette recherche." : "Aucun établissement enregistré pour le moment."}
+                        </p>
+                      </div>`
+                    : `<div style="display: grid; gap: 1.25rem;">
+                        ${displayData
+                          .map((item) => cardHtml(item, baseSize))
+                          .join("")}
+                      </div>`
+                }
+              </main>
+            </div>
+          `;
+          return;
+        }
+
+        if (currentView === "add") {
+          app.innerHTML = `
+            <div style="min-height: 100%; display: flex; flex-direction: column;">
+              <nav style="background: ${config.surface_color}; border-bottom: 1px solid rgba(0,0,0,0.08); padding: 1.25rem 2rem;">
+                <div style="max-width: 1200px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center;">
+                  <h1 style="font-size: ${baseSize * 1.5}px; font-weight: 700; color: ${config.primary_color}; margin: 0;">
+                    ${escapeHtml(config.site_title)}
+                  </h1>
+                  <div style="display: flex; gap: 2rem;">
+                    <button onclick="navigateTo('home')" style="font-size: ${baseSize}px; color: ${config.text_color}; background: none; border: none; cursor: pointer; padding: 0;">
+                      Accueil
+                    </button>
+                    <button onclick="navigateTo('directory')" style="font-size: ${baseSize}px; color: ${config.text_color}; background: none; border: none; cursor: pointer; padding: 0;">
+                      Répertoire
+                    </button>
+                    <button onclick="navigateTo('add')" style="font-size: ${baseSize}px; color: ${config.primary_color}; background: none; border: none; cursor: pointer; font-weight: 600; padding: 0;">
+                      Ajouter
+                    </button>
+                  </div>
+                </div>
+              </nav>
+
+              <main style="flex: 1; padding: 3rem 2rem; max-width: 800px; margin: 0 auto; width: 100%;">
+                <h2 style="font-size: ${baseSize * 1.75}px; font-weight: 700; margin: 0 0 2rem 0;">
+                  Ajouter un établissement
+                </h2>
+
+                <form id="addForm" onsubmit="handleAddEntry(event)" style="background: ${config.surface_color}; padding: 2rem; border-radius: 12px; border: 1px solid rgba(0,0,0,0.08);">
+                  <div style="display: grid; gap: 1.25rem;">
+                    ${fieldHtml("Nom de l'établissement", "name", "text", true, baseSize)}
+                    ${selectHtml("Type", "type", ["Réparation","Location","Réparation et Location"], true, baseSize)}
+                    ${fieldHtml("Adresse", "address", "text", true, baseSize)}
+                    ${fieldHtml("Code postal", "postal_code", "text", true, baseSize, "Ex: H2X 1Y4")}
+                    ${fieldHtml("Téléphone", "phone", "tel", true, baseSize)}
+                    ${fieldHtml("Email", "email", "email", true, baseSize)}
+
+                    <button
+                      type="submit"
+                      id="submitBtn"
+                      style="padding: 1rem; font-size: ${baseSize}px; background: ${config.primary_color}; color: ${config.surface_color}; border: none; border-radius: 10px; cursor: pointer; font-weight: 700; transition: opacity 0.2s; margin-top: 0.5rem;"
+                      onmouseover="this.style.opacity='0.85'"
+                      onmouseout="this.style.opacity='1'"
+                    >
+                      Ajouter l'établissement
+                    </button>
+                  </div>
+                </form>
+
+                <div id="message" style="margin-top: 1.25rem; padding: 1rem; border-radius: 10px; font-size: ${baseSize * 0.95}px; display: none;"></div>
+              </main>
+            </div>
+          `;
+          return;
+        }
+      }
+
+      function tileHtml(title, text, baseSize) {
+        return `
+          <div style="background: ${config.surface_color}; padding: 2rem; border-radius: 12px; border: 1px solid rgba(0,0,0,0.08);">
+            <h3 style="font-size: ${baseSize * 1.25}px; font-weight: 600; margin: 0 0 1rem 0;">
+              ${escapeHtml(title)}
+            </h3>
+            <p style="font-size: ${baseSize * 0.95}px; opacity: 0.78; margin: 0; line-height: 1.6;">
+              ${escapeHtml(text)}
+            </p>
+          </div>
+        `;
+      }
+
+      function cardHtml(item, baseSize) {
+        const safeId = escapeHtml(item.id);
+        return `
+          <div style="background: ${config.surface_color}; padding: 1.6rem; border-radius: 12px; border: 1px solid rgba(0,0,0,0.08);">
+            <div style="display: flex; justify-content: space-between; align-items: start; gap: 1rem; margin-bottom: 0.9rem;">
+              <div>
+                <h3 style="font-size: ${baseSize * 1.25}px; font-weight: 700; margin: 0 0 0.45rem 0;">
+                  ${escapeHtml(item.name)}
+                </h3>
+                <span style="display: inline-block; padding: 0.25rem 0.75rem; background: ${config.primary_color}; color: ${config.surface_color}; border-radius: 8px; font-size: ${baseSize * 0.85}px; font-weight: 600;">
+                  ${escapeHtml(item.type)}
+                </span>
+              </div>
+              <button
+                onclick="deleteEntry('${safeId}')"
+                style="padding: 0.5rem 0.9rem; font-size: ${baseSize * 0.9}px; background: transparent; color: ${config.secondary_color}; border: 1px solid ${config.secondary_color}; border-radius: 10px; cursor: pointer; transition: all 0.2s;"
+                onmouseover="this.style.background='${config.secondary_color}'; this.style.color='${config.surface_color}';"
+                onmouseout="this.style.background='transparent'; this.style.color='${config.secondary_color}';"
+              >
+                Supprimer
+              </button>
+            </div>
+
+            <div style="display: grid; gap: 0.35rem; font-size: ${baseSize * 0.95}px; opacity: 0.85;">
+              <p style="margin: 0;">📍 ${escapeHtml(item.address)}, ${escapeHtml(item.postal_code)}</p>
+              <p style="margin: 0;">📞 ${escapeHtml(item.phone)}</p>
+              <p style="margin: 0;">✉️ ${escapeHtml(item.email)}</p>
+            </div>
+          </div>
+        `;
+      }
+
+      function fieldHtml(label, id, type, required, baseSize, hint = "") {
+        return `
+          <div>
+            <label for="${escapeHtml(id)}" style="display: block; font-size: ${baseSize}px; font-weight: 700; margin-bottom: 0.5rem;">
+              ${escapeHtml(label)}
+            </label>
+            <input
+              type="${escapeHtml(type)}"
+              id="${escapeHtml(id)}"
+              ${required ? "required" : ""}
+              placeholder="${escapeHtml(hint)}"
+              style="width: 100%; padding: 0.75rem; font-size: ${baseSize}px; border: 1px solid rgba(0,0,0,0.2); border-radius: 10px; background: ${config.background_color}; color: ${config.text_color}; outline: none;"
+            >
+          </div>
+        `;
+      }
+
+      function selectHtml(label, id, options, required, baseSize) {
+        const opts = options
+          .map((o) => `<option value="${escapeHtml(o)}">${escapeHtml(o)}</option>`)
+          .join("");
+        return `
+          <div>
+            <label for="${escapeHtml(id)}" style="display: block; font-size: ${baseSize}px; font-weight: 700; margin-bottom: 0.5rem;">
+              ${escapeHtml(label)}
+            </label>
+            <select
+              id="${escapeHtml(id)}"
+              ${required ? "required" : ""}
+              style="width: 100%; padding: 0.75rem; font-size: ${baseSize}px; border: 1px solid rgba(0,0,0,0.2); border-radius: 10px; background: ${config.background_color}; color: ${config.text_color}; outline: none; cursor: pointer;"
+            >
+              <option value="">Sélectionnez...</option>
+              ${opts}
+            </select>
+          </div>
+        `;
+      }
+
+      // Navigation
+      window.navigateTo = function (view) {
+        currentView = view;
+        if (view === "home") searchResults = [];
+        renderApp();
+      };
+
+      // Recherche depuis la home
+      window.handleSearch = function (event) {
+        event.preventDefault();
+        const input = document.getElementById("postalSearch");
+        const query = normalizePostalCode(input ? input.value : "");
+
+        if (!query) return;
+
+        searchResults = currentData.filter((item) =>
+          normalizePostalCode(item.postal_code).includes(query)
+        );
+
+        currentView = "directory";
+        renderApp();
+      };
+
+      // Recherche depuis la page répertoire
+      window.handleDirectorySearch = function (event) {
+        event.preventDefault();
+        const input = document.getElementById("postalSearchDirectory");
+        const query = normalizePostalCode(input ? input.value : "");
+
+        if (!query) {
+          searchResults = [];
+          renderApp();
+          return;
+        }
+
+        searchResults = currentData.filter((item) =>
+          normalizePostalCode(item.postal_code).includes(query)
+        );
+
+        renderApp();
+      };
+
+      window.clearSearch = function () {
+        searchResults = [];
+        renderApp();
+      };
+
+      // Ajout (en mémoire)
+      window.handleAddEntry = function (event) {
+        event.preventDefault();
+
+        if (currentData.length >= 999) {
+          showMessage("Limite atteinte : maximum 999 établissements. Veuillez en supprimer.", "error");
+          return;
+        }
+
+        const submitBtn = document.getElementById("submitBtn");
+        submitBtn.disabled = true;
+        submitBtn.textContent = "Ajout en cours...";
+
+        const entry = {
+          id: String(Date.now()),
+          name: document.getElementById("name").value.trim(),
+          type: document.getElementById("type").value,
+          address: document.getElementById("address").value.trim(),
+          postal_code: document.getElementById("postal_code").value.trim(),
+          phone: document.getElementById("phone").value.trim(),
+          email: document.getElementById("email").value.trim()
+        };
+
+        currentData = [entry, ...currentData];
+
+        document.getElementById("addForm").reset();
+        showMessage("Établissement ajouté avec succès !", "success");
+
+        submitBtn.disabled = false;
+        submitBtn.textContent = "Ajouter l'établissement";
+      };
+
+      // Suppression (en mémoire)
+      window.deleteEntry = function (id) {
+        currentData = currentData.filter((item) => item.id !== id);
+
+        if (searchResults.length > 0) {
+          searchResults = searchResults.filter((item) => item.id !== id);
+        }
+
+        showMessage("Établissement supprimé.", "success");
+        renderApp();
+      };
+
+      function showMessage(text, type) {
+        const message = document.getElementById("message");
+        if (!message) return;
+
+        message.textContent = text;
+        message.style.display = "block";
+        message.style.background = type === "success" ? config.primary_color : config.secondary_color;
+        message.style.color = config.surface_color;
+
+        setTimeout(() => {
+          message.style.display = "none";
+        }, 3500);
+      }
+
+      // Init
+      renderApp();
+    </script>
+  </body>
+</html>

@@ -11,7 +11,6 @@ export function Navbar() {
   const navItems = [
     { name: "Accueil", path: "/" },
     { name: "Répertoire", path: "/directory" },
-    { name: "Ajouter", path: "/add" },
   ];
 
   return (
@@ -23,7 +22,7 @@ export function Navbar() {
               <Bike className="h-6 w-6 text-white" />
             </div>
             <span className="font-serif text-xl font-bold tracking-tight text-foreground">
-              Répertoire Vélo
+              Le grand répertoire vélo de Montréal
             </span>
           </Link>
 
@@ -45,7 +44,7 @@ export function Navbar() {
             ))}
             <Link href="/add">
               <Button size="sm" className="bg-primary hover:bg-primary/90 text-white shadow-lg shadow-primary/20">
-                Inscrire un pro
+                Inscrire un commerce
               </Button>
             </Link>
           </div>

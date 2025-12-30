@@ -52,12 +52,12 @@ export default function Directory() {
           </div>
           
           <form onSubmit={handleSearch} className="flex flex-col sm:flex-row gap-3">
-            <Select value={service} onValueChange={setService}>
+            <Select value={service || "all"} onValueChange={(val) => setService(val === "all" ? "" : val)}>
               <SelectTrigger className="w-full sm:w-48 bg-white" data-testid="filter-service">
                 <SelectValue placeholder="Tous les services" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Tous les services</SelectItem>
+                <SelectItem value="all">Tous les services</SelectItem>
                 <SelectItem value="repair">Réparation</SelectItem>
                 <SelectItem value="rental">Location</SelectItem>
                 <SelectItem value="sale">Vente</SelectItem>

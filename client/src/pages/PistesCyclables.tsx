@@ -2,6 +2,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ExternalLink, Map, Route, Navigation } from "lucide-react";
+import { Navbar } from "@/components/Navbar";
 
 const networks = [
   "Route verte du Québec",
@@ -31,6 +32,7 @@ const categories = [
 export default function PistesCyclables() {
   return (
     <div className="min-h-screen bg-background">
+      <Navbar />
       <div className="container mx-auto px-4 py-8 lg:px-8">
         <div className="mb-8 space-y-2">
           <h1 className="font-serif text-3xl font-bold text-foreground md:text-4xl" data-testid="text-page-title">

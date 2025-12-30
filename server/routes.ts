@@ -46,9 +46,9 @@ export async function registerRoutes(
     // Geocode postal code
     const userCoords = await geocodePostalCode(postalCode);
     if (!userCoords) {
-      return res.status(400).json({
-        message: "Impossible de géolocaliser ce code postal",
-      });
+      // If geocoding fails, return all shops without distance filtering
+      console.log(`Geocoding failed for ${postalCode}, returning all shops without distance`);
+      return res.json(shops.map((shop) => ({ ...shop, distance: null })));
     }
 
     // Filter and rank by distance

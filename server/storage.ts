@@ -1,19 +1,21 @@
 import { db } from "./db";
 import { shops, type InsertShop, type Shop } from "@shared/schema";
-import { ilike, eq, and, sql } from "drizzle-orm";
+import { eq, and, sql } from "drizzle-orm";
 
 export interface IStorage {
   getShops(service?: string): Promise<Shop[]>;
-  createShop(shop: InsertShop): Promise<Shop>;
+  getPendingShops(): Promise<Shop[]>;
+  getShopById(id: number): Promise<Shop | undefined>;
+  createShop(shop: InsertShop, status?: string): Promise<Shop>;
+  updateShopStatus(id: number, status: string): Promise<Shop | undefined>;
   clearShops(): Promise<void>;
   countShops(): Promise<number>;
 }
 
 export class DatabaseStorage implements IStorage {
   async getShops(service?: string): Promise<Shop[]> {
-    const conditions = [];
+    const conditions = [eq(shops.status, "approved")];
 
-    // Filter by service type
     if (service === 'repair') {
       conditions.push(eq(shops.repair, true));
     } else if (service === 'rental') {
@@ -24,15 +26,25 @@ export class DatabaseStorage implements IStorage {
       conditions.push(eq(shops.storage, true));
     }
 
-    if (conditions.length > 0) {
-      return await db.select().from(shops).where(and(...conditions));
-    }
-
-    return await db.select().from(shops);
+    return await db.select().from(shops).where(and(...conditions));
   }
 
-  async createShop(insertShop: InsertShop): Promise<Shop> {
-    const [shop] = await db.insert(shops).values(insertShop).returning();
+  async getPendingShops(): Promise<Shop[]> {
+    return await db.select().from(shops).where(eq(shops.status, "pending"));
+  }
+
+  async getShopById(id: number): Promise<Shop | undefined> {
+    const [shop] = await db.select().from(shops).where(eq(shops.id, id));
+    return shop;
+  }
+
+  async createShop(insertShop: InsertShop, status: string = "approved"): Promise<Shop> {
+    const [shop] = await db.insert(shops).values({ ...insertShop, status }).returning();
+    return shop;
+  }
+
+  async updateShopStatus(id: number, status: string): Promise<Shop | undefined> {
+    const [shop] = await db.update(shops).set({ status }).where(eq(shops.id, id)).returning();
     return shop;
   }
 

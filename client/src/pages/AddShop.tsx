@@ -45,11 +45,12 @@ export default function AddShop() {
     createShop.mutate(data, {
       onSuccess: () => {
         toast({
-          title: "Succès !",
-          description: "La boutique a été ajoutée au répertoire.",
+          title: "Demande soumise",
+          description: "Votre demande d'inscription sera examinée sous peu. Merci!",
           className: "bg-primary text-white border-none",
+          duration: 5000,
         });
-        setLocation("/directory");
+        form.reset();
       },
       onError: (error) => {
         toast({

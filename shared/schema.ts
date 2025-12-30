@@ -17,9 +17,10 @@ export const shops = pgTable("shops", {
   notes: text("notes"),
   lat: numeric("lat", { precision: 10, scale: 8 }),
   lon: numeric("lon", { precision: 11, scale: 8 }),
+  status: text("status").default("approved"),
 });
 
-export const insertShopSchema = createInsertSchema(shops).omit({ id: true });
+export const insertShopSchema = createInsertSchema(shops).omit({ id: true, status: true });
 
 export type Shop = typeof shops.$inferSelect;
 export type InsertShop = z.infer<typeof insertShopSchema>;

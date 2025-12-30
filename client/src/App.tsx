@@ -8,6 +8,7 @@ import Home from "@/pages/Home";
 import Directory from "@/pages/Directory";
 import AddShop from "@/pages/AddShop";
 import Admin from "@/pages/Admin";
+import PistesCyclables from "@/pages/PistesCyclables";
 
 function Router() {
   return (
@@ -16,6 +17,7 @@ function Router() {
       <Route path="/directory" component={Directory} />
       <Route path="/add" component={AddShop} />
       <Route path="/admin" component={Admin} />
+      <Route path="/pistes-cyclables" component={PistesCyclables} />
       <Route component={NotFound} />
     </Switch>
   );

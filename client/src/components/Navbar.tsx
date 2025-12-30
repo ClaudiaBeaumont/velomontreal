@@ -11,6 +11,7 @@ export function Navbar() {
   const navItems = [
     { name: "Accueil", path: "/" },
     { name: "Répertoire", path: "/directory" },
+    { name: "Pistes cyclables", path: "/pistes-cyclables" },
   ];
 
   return (

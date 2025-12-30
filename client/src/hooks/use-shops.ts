@@ -1,27 +1,37 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api, type ShopInput } from "@shared/routes";
-import { z } from "zod";
+import type { Shop } from "@shared/schema";
 
-// Helper to log validation errors
-function parseWithLogging<T>(schema: z.ZodSchema<T>, data: unknown, label: string): T {
-  const result = schema.safeParse(data);
-  if (!result.success) {
-    console.error(`[Zod] ${label} validation failed:`, result.error.format());
-    // In production, we might return the raw data or throw, 
-    // but throwing allows Query to handle the error state.
-    throw result.error;
-  }
-  return result.data;
+export interface ShopWithDistance extends Shop {
+  distance: number | null;
 }
 
-export function useShops(postalCode?: string, service?: string) {
-  const queryKey = [api.shops.list.path, { postalCode, service }];
+export function useShops(service?: string) {
+  const queryKey = ["/api/shops", { service }];
   
-  return useQuery({
+  return useQuery<Shop[]>({
     queryKey,
     queryFn: async () => {
-      // Build URL with query params
-      const url = new URL(api.shops.list.path, window.location.origin);
+      const url = new URL("/api/shops", window.location.origin);
+      if (service) {
+        url.searchParams.append("service", service);
+      }
+
+      const res = await fetch(url.toString(), { credentials: "include" });
+      if (!res.ok) throw new Error("Impossible de charger les boutiques");
+      
+      return res.json();
+    },
+  });
+}
+
+export function useShopsSearch(postalCode?: string, service?: string) {
+  const queryKey = ["/api/shops/search", { postalCode, service }];
+  
+  return useQuery<ShopWithDistance[], Error>({
+    queryKey,
+    queryFn: async () => {
+      const url = new URL("/api/shops/search", window.location.origin);
       if (postalCode) {
         url.searchParams.append("postalCode", postalCode);
       }
@@ -30,11 +40,14 @@ export function useShops(postalCode?: string, service?: string) {
       }
 
       const res = await fetch(url.toString(), { credentials: "include" });
-      if (!res.ok) throw new Error("Impossible de charger les boutiques");
+      if (!res.ok) {
+        const error = await res.json();
+        throw new Error(error.message || "Erreur de recherche");
+      }
       
-      const data = await res.json();
-      return parseWithLogging(api.shops.list.responses[200], data, "shops.list");
+      return res.json();
     },
+    enabled: true,
   });
 }
 
@@ -43,28 +56,27 @@ export function useCreateShop() {
   
   return useMutation({
     mutationFn: async (newShop: ShopInput) => {
-      // Validate input before sending (double safety)
-      const validatedInput = api.shops.create.input.parse(newShop);
-
-      const res = await fetch(api.shops.create.path, {
-        method: api.shops.create.method,
+      const res = await fetch("/api/shops", {
+        method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(validatedInput),
+        body: JSON.stringify(newShop),
         credentials: "include",
       });
 
       if (!res.ok) {
         if (res.status === 400) {
-          const error = api.shops.create.responses[400].parse(await res.json());
-          throw new Error(error.message);
+          const error = await res.json();
+          throw new Error(error.message || "Erreur de validation");
         }
         throw new Error("Erreur lors de la création de la boutique");
       }
 
-      return api.shops.create.responses[201].parse(await res.json());
+      return res.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [api.shops.list.path] });
+      // Invalidate both shops list and search queries
+      queryClient.invalidateQueries({ queryKey: ["/api/shops"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/shops/search"] });
     },
   });
 }

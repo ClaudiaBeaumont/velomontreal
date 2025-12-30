@@ -14,7 +14,6 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-  FormDescription,
 } from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, ArrowLeft } from "lucide-react";
@@ -31,10 +30,14 @@ export default function AddShop() {
       name: "",
       repair: false,
       rental: false,
+      sale: false,
+      storage: false,
       address: "",
       postalCode: "",
+      city: "Montréal",
       phone: "",
-      email: "",
+      website: "",
+      notes: "",
     },
   });
 
@@ -68,6 +71,7 @@ export default function AddShop() {
             variant="ghost" 
             className="mb-6 pl-0 hover:bg-transparent hover:text-primary transition-colors"
             onClick={() => setLocation("/")}
+            data-testid="button-back"
           >
             <ArrowLeft className="mr-2 h-4 w-4" /> Retour à l'accueil
           </Button>
@@ -86,77 +90,80 @@ export default function AddShop() {
                     name="name"
                     render={({ field }) => (
                       <FormItem className="col-span-2">
-                        <FormLabel>Nom de l'établissement</FormLabel>
+                        <FormLabel>Nom de l'établissement *</FormLabel>
                         <FormControl>
-                          <Input placeholder="Ex: Vélo Express" {...field} className="bg-background" />
+                          <Input placeholder="Ex: Vélo Express" {...field} className="bg-background" data-testid="input-name" />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
 
-                  <FormField
-                    control={form.control}
-                    name="repair"
-                    render={({ field }) => (
-                      <FormItem className="flex items-center space-x-2 mt-2">
-                        <FormControl>
-                          <Checkbox checked={field.value} onCheckedChange={field.onChange} />
-                        </FormControl>
-                        <FormLabel className="font-normal cursor-pointer">Réparation</FormLabel>
-                      </FormItem>
-                    )}
-                  />
+                  <div className="col-span-2">
+                    <FormLabel className="mb-3 block">Services offerts</FormLabel>
+                    <div className="grid grid-cols-2 gap-4">
+                      <FormField
+                        control={form.control}
+                        name="repair"
+                        render={({ field }) => (
+                          <FormItem className="flex items-center space-x-2">
+                            <FormControl>
+                              <Checkbox checked={field.value} onCheckedChange={field.onChange} data-testid="checkbox-repair" />
+                            </FormControl>
+                            <FormLabel className="font-normal cursor-pointer">Réparation</FormLabel>
+                          </FormItem>
+                        )}
+                      />
 
-                  <FormField
-                    control={form.control}
-                    name="rental"
-                    render={({ field }) => (
-                      <FormItem className="flex items-center space-x-2 mt-2">
-                        <FormControl>
-                          <Checkbox checked={field.value} onCheckedChange={field.onChange} />
-                        </FormControl>
-                        <FormLabel className="font-normal cursor-pointer">Location</FormLabel>
-                      </FormItem>
-                    )}
-                  />
+                      <FormField
+                        control={form.control}
+                        name="rental"
+                        render={({ field }) => (
+                          <FormItem className="flex items-center space-x-2">
+                            <FormControl>
+                              <Checkbox checked={field.value} onCheckedChange={field.onChange} data-testid="checkbox-rental" />
+                            </FormControl>
+                            <FormLabel className="font-normal cursor-pointer">Location</FormLabel>
+                          </FormItem>
+                        )}
+                      />
 
-                  <FormField
-                    control={form.control}
-                    name="phone"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Téléphone</FormLabel>
-                        <FormControl>
-                          <Input placeholder="01 23 45 67 89" {...field} className="bg-background" />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                      <FormField
+                        control={form.control}
+                        name="sale"
+                        render={({ field }) => (
+                          <FormItem className="flex items-center space-x-2">
+                            <FormControl>
+                              <Checkbox checked={field.value} onCheckedChange={field.onChange} data-testid="checkbox-sale" />
+                            </FormControl>
+                            <FormLabel className="font-normal cursor-pointer">Vente</FormLabel>
+                          </FormItem>
+                        )}
+                      />
 
-                  <FormField
-                    control={form.control}
-                    name="email"
-                    render={({ field }) => (
-                      <FormItem className="col-span-2">
-                        <FormLabel>Email professionnel</FormLabel>
-                        <FormControl>
-                          <Input type="email" placeholder="contact@exemple.com" {...field} className="bg-background" />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                      <FormField
+                        control={form.control}
+                        name="storage"
+                        render={({ field }) => (
+                          <FormItem className="flex items-center space-x-2">
+                            <FormControl>
+                              <Checkbox checked={field.value} onCheckedChange={field.onChange} data-testid="checkbox-storage" />
+                            </FormControl>
+                            <FormLabel className="font-normal cursor-pointer">Entreposage</FormLabel>
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                  </div>
 
                   <FormField
                     control={form.control}
                     name="address"
                     render={({ field }) => (
                       <FormItem className="col-span-2">
-                        <FormLabel>Adresse complète</FormLabel>
+                        <FormLabel>Adresse complète *</FormLabel>
                         <FormControl>
-                          <Input placeholder="123 Rue de la République" {...field} className="bg-background" />
+                          <Input placeholder="123 Rue Saint-Denis, Montréal" {...field} className="bg-background" data-testid="input-address" />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -168,9 +175,65 @@ export default function AddShop() {
                     name="postalCode"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Code Postal</FormLabel>
+                        <FormLabel>Code Postal *</FormLabel>
                         <FormControl>
-                          <Input placeholder="75000" {...field} className="bg-background" />
+                          <Input placeholder="H2J2J9" {...field} className="bg-background" data-testid="input-postal-code" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="city"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Ville</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Montréal" {...field} value={field.value || ""} className="bg-background" data-testid="input-city" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="phone"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Téléphone</FormLabel>
+                        <FormControl>
+                          <Input placeholder="514-555-1234" {...field} value={field.value || ""} className="bg-background" data-testid="input-phone" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="website"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Site web</FormLabel>
+                        <FormControl>
+                          <Input type="url" placeholder="https://exemple.com" {...field} value={field.value || ""} className="bg-background" data-testid="input-website" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="notes"
+                    render={({ field }) => (
+                      <FormItem className="col-span-2">
+                        <FormLabel>Notes (optionnel)</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Informations supplémentaires..." {...field} value={field.value || ""} className="bg-background" data-testid="input-notes" />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -183,6 +246,7 @@ export default function AddShop() {
                     type="submit" 
                     className="w-full h-12 text-base font-semibold bg-primary hover:bg-primary/90 text-white shadow-lg shadow-primary/20"
                     disabled={createShop.isPending}
+                    data-testid="button-submit"
                   >
                     {createShop.isPending ? (
                       <>

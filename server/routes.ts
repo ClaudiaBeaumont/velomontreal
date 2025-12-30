@@ -3,16 +3,63 @@ import type { Server } from "http";
 import { storage } from "./storage";
 import { api } from "@shared/routes";
 import { z } from "zod";
+import { loadShopsFromCSV } from "./csv-loader";
+import {
+  geocodePostalCode,
+  filterAndRankShops,
+  isValidCanadianPostalCode,
+  normalizePostalCode,
+} from "./geo";
 
 export async function registerRoutes(
   httpServer: Server,
   app: Express
 ): Promise<Server> {
+  // Get shops with optional service filter
   app.get(api.shops.list.path, async (req, res) => {
     const service = req.query.service as string | undefined;
-    const postalCode = req.query.postalCode as string | undefined;
-    const shops = await storage.getShops(service, postalCode);
+    const shops = await storage.getShops(service);
     res.json(shops);
+  });
+
+  // Search shops by postal code with distance filtering
+  app.get("/api/shops/search", async (req, res) => {
+    const service = req.query.service as string | undefined;
+    const postalCode = req.query.postalCode as string | undefined;
+    const maxDistance = parseFloat(req.query.maxDistance as string) || 15;
+
+    // Get all shops matching service filter
+    const shops = await storage.getShops(service);
+
+    // If no postal code, return all shops without distance
+    if (!postalCode) {
+      return res.json(shops.map((shop) => ({ ...shop, distance: null })));
+    }
+
+    // Validate postal code
+    if (!isValidCanadianPostalCode(postalCode)) {
+      return res.status(400).json({
+        message: "Code postal invalide. Format attendu: A1A1A1",
+      });
+    }
+
+    // Geocode postal code
+    const userCoords = await geocodePostalCode(postalCode);
+    if (!userCoords) {
+      return res.status(400).json({
+        message: "Impossible de géolocaliser ce code postal",
+      });
+    }
+
+    // Filter and rank by distance
+    const results = filterAndRankShops(
+      shops,
+      userCoords.lat,
+      userCoords.lon,
+      maxDistance
+    );
+
+    res.json(results);
   });
 
   app.post(api.shops.create.path, async (req, res) => {
@@ -24,40 +71,28 @@ export async function registerRoutes(
       if (err instanceof z.ZodError) {
         return res.status(400).json({
           message: err.errors[0].message,
-          field: err.errors[0].path.join('.'),
+          field: err.errors[0].path.join("."),
         });
       }
       throw err;
     }
   });
 
-  // Seed initial data if empty
+  // Seed data from CSV if database is empty
   const seedData = async () => {
-    const existing = await storage.getShops();
-    if (existing.length === 0) {
-      console.log("Seeding database...");
-      await storage.createShop({
-        name: "Atelier Vélo Plateau",
-        repair: true,
-        rental: false,
-        address: "123 av. du Mont-Royal E, Montréal",
-        postalCode: "H2J1X1",
-        phone: "514-555-0101",
-        email: "contact@atelierplateau.ca"
-      });
-      await storage.createShop({
-        name: "Vélo Service Rosemont",
-        repair: true,
-        rental: true,
-        address: "456 rue Beaubien E, Montréal",
-        postalCode: "H2G1M1",
-        phone: "514-555-0202",
-        email: "info@veloservicerosemont.ca"
-      });
-      console.log("Database seeded successfully.");
+    const count = await storage.countShops();
+    if (count === 0) {
+      console.log("Seeding database from CSV...");
+      const shops = loadShopsFromCSV();
+      for (const shop of shops) {
+        await storage.createShop(shop);
+      }
+      console.log(`Database seeded with ${shops.length} shops.`);
+    } else {
+      console.log(`Database already has ${count} shops, skipping seed.`);
     }
   };
-  
+
   // Run seeding asynchronously
   seedData().catch(console.error);
 

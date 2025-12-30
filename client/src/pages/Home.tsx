@@ -52,21 +52,24 @@ export default function Home() {
             <form onSubmit={handleSearch} className="mx-auto flex w-full max-w-2xl flex-col gap-4">
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 items-end">
                 <Select value={service} onValueChange={setService}>
-                  <SelectTrigger className="h-12 rounded-xl border-2 border-border/60 bg-white text-base">
+                  <SelectTrigger className="h-12 rounded-xl border-2 border-border/60 bg-white text-base" data-testid="select-service">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="repair">Réparation</SelectItem>
                     <SelectItem value="rental">Location</SelectItem>
+                    <SelectItem value="sale">Vente</SelectItem>
+                    <SelectItem value="storage">Entreposage</SelectItem>
                   </SelectContent>
                 </Select>
                 <div className="relative sm:col-span-2">
                   <Search className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
                   <Input 
-                    placeholder="Code postal (ex: H2X1Y4)" 
+                    placeholder="Code postal (ex: H2J2J9) - rayon de 15 km" 
                     className="h-12 w-full pl-10 rounded-xl border-2 border-border/60 bg-white text-base shadow-sm focus-visible:border-primary focus-visible:ring-primary/20"
                     value={postalCode}
                     onChange={(e) => setPostalCode(e.target.value)}
+                    data-testid="input-postal-code"
                   />
                 </div>
               </div>

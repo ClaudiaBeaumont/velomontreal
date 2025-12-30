@@ -109,7 +109,7 @@ export default function AddShop() {
                         render={({ field }) => (
                           <FormItem className="flex items-center space-x-2">
                             <FormControl>
-                              <Checkbox checked={field.value} onCheckedChange={field.onChange} data-testid="checkbox-repair" />
+                              <Checkbox checked={!!field.value} onCheckedChange={field.onChange} data-testid="checkbox-repair" />
                             </FormControl>
                             <FormLabel className="font-normal cursor-pointer">Réparation</FormLabel>
                           </FormItem>
@@ -122,7 +122,7 @@ export default function AddShop() {
                         render={({ field }) => (
                           <FormItem className="flex items-center space-x-2">
                             <FormControl>
-                              <Checkbox checked={field.value} onCheckedChange={field.onChange} data-testid="checkbox-rental" />
+                              <Checkbox checked={!!field.value} onCheckedChange={field.onChange} data-testid="checkbox-rental" />
                             </FormControl>
                             <FormLabel className="font-normal cursor-pointer">Location</FormLabel>
                           </FormItem>
@@ -135,7 +135,7 @@ export default function AddShop() {
                         render={({ field }) => (
                           <FormItem className="flex items-center space-x-2">
                             <FormControl>
-                              <Checkbox checked={field.value} onCheckedChange={field.onChange} data-testid="checkbox-sale" />
+                              <Checkbox checked={!!field.value} onCheckedChange={field.onChange} data-testid="checkbox-sale" />
                             </FormControl>
                             <FormLabel className="font-normal cursor-pointer">Vente</FormLabel>
                           </FormItem>
@@ -148,7 +148,7 @@ export default function AddShop() {
                         render={({ field }) => (
                           <FormItem className="flex items-center space-x-2">
                             <FormControl>
-                              <Checkbox checked={field.value} onCheckedChange={field.onChange} data-testid="checkbox-storage" />
+                              <Checkbox checked={!!field.value} onCheckedChange={field.onChange} data-testid="checkbox-storage" />
                             </FormControl>
                             <FormLabel className="font-normal cursor-pointer">Entreposage</FormLabel>
                           </FormItem>

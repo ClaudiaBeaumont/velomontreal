@@ -23,7 +23,7 @@ export function Navbar() {
               <Bike className="h-6 w-6 text-white" />
             </div>
             <span className="font-serif text-xl font-bold tracking-tight text-foreground">
-              Le grand répertoire vélo de Montréal
+              Répertoire vélo Montréal
             </span>
           </Link>
 

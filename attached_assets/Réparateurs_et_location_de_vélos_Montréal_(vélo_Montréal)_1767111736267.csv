@@ -1,0 +1,26 @@
+id,name,repair,rental,sale,storage,address,postal_code,city,province,country,lat,lon,phone,website,notes
+1,Atelier Vélo Express,1,0,0,1,"1104 Rue Saint-Zotique Est, Montréal, QC H2S 2H1",H2S2H1,Montréal,QC,CA,45.5418841210507,-73.60463387353182,514-478-1530,http://atelierveloexpress.ca/,Spécialiste réparateur
+2,Vélo Bienfait,1,1,1,0,"1370 Rue Beaubien E, Montréal, QC H2G 1K9",H2G2K9,Montréal,QC,CA,45.54283269192549,-73.59818223964233,514-276-9999,https://www.velobienfait.com/,Fait aussi de la vente de vélo
+3,Martin Roseboom vélo,1,0,1,0,"2200 Avenue du Mont-Royal E, Montréal, QC H2H 1K4",H2H1K4,Montréal,QC,CA,45.53844150614554,-73.57077584450886,514-439-9989,http://martinrooseboomvelo.com/,Vente de pièces
+4,Vélo IBIKE Montréal,1,0,1,1,"2101 Rue Rachel E, Montréal, QC H2H 1R1",H2H1R1,Montréal,QC,CA,45.53471109812967,-73.56683206138302,438-380-5811,https://veloibike.ca/,
+5,Vélo Cycle Action Sport,1,1,1,0,"2013 Av. Papineau, Montréal, QC H2K 4E8",H2K4E8,Montréal,QC,CA,45.528572467762835,-73.55894363310674,514-598-1296,http://cycleactionsport.com/,
+6,Pignon sur roues,1,0,1,0,"1308 Avenue du Mont-Royal E, Montréal, QC H2J 1Y5",H2J 1Y5,Montréal,QC,CA,45.530880369089125,-73.5769821952833,514-523-6480,https://pignonsurroues.com/fr,
+7,Vélodidacte,1,0,1,0,"4468 Rue de Brébeuf, Montréal, QC H2J 3K9",H2J 3K9,Montréal,QC,CA,45.529722355794,-73.57761000690137,514-522-5499,https://velodidacte.com/,Montage de vélo à la main
+8,Cycles C&L Rachel,1,0,1,1,"978 Rue Rachel E, Montréal, QC H2J 2J3",H2J 2J3,Montréal,QC,CA,45.52545830987331, -73.5749311370664,514-523-0330,https://www.clcycle.ca/fc/,
+9,Grand Cycle Enr,1,1,1,0,"901 Rue Cherrier, Montréal, QC H2L 1J1",H2L 1J1,Montréal,QC,CA,45.52145535110592,-73.567952622961,514-525-1414,https://www.legrandcycle.com/,
+10,Cycles Union,1,0,0,1,"1757 R. Atateken, Montréal, QC H2L 3L7",H2L 3L7,Montréal,QC,CA,45.52008029516133,-73.56104023697645,514-524-6650,https://cyclesunion.ca/,
+11,Lurlu Coop,1,0,0,0,"4840 R. Saint-Denis, Montréal, QC H2J 2L6",H2J 2L6,Montréal,QC,CA,45.526871917838484,-73.58601088629082,514-550-4887,https://www.lurlucoop.org/,
+12,ReCycliste,1,0,1,0,"371 Rue Marie-Anne, Montréal, QC H2J 2L1",H2J 2L1,Montréal,QC,CA,45.52331311720629,-73.58086874072916,,https://recycliste.ca/fr/index.html,
+13,Trek Bicycle Montréal Plateau,1,0,1,0,"4210 R. Saint-Denis, Montréal, QC H2J 2K8",H2J 2K8,Montréal,QC,CA,45.522562656392665,-73.5787279258527,438-260-0873,https://www.trekbikes.com/ca/fr_CA/,
+14,Repair and Run,1,0,1,0,"4157 R. Saint-Denis, Montréal, QC H2W 2M7",H2W 2M7,Montréal,QC,CA,45.522437394321294, -73.57753847582228,514-284-4442,https://repairandrun.ca/fr,
+15,Campus CycloChrome Bike Shop,1,0,0,0,"619 Av. Duluth E, Montréal, QC H2L 1B1",H2L 1B1,Montréal,QC,CA,45.52298749084693,-73.57444318007357,514-419-1964,https://www.cyclochrome.com/,
+16,Santrovelo Atelier Vélo Communautaire,1,0,0,0,"111 Rue Roy E, Montréal, QC H2W 1M1",H2W 1M1,Montréal,QC,CA,45.51696116174658,-73.57507663095912,514-284-9335,https://santropolroulant.org/,
+17,"La Bicycletterie JR - Montreal Bicycle Shop, Bicycle Rental",1,0,0,1,"201 Rue Rachel E, Montréal, QC H2W 1E4",H2W 1E4,Montréal,QC,CA,45.52021006810012,-73.58013949593627,514-843-6989,https://book.squareup.com/appointments/nxigf17a78ua7c/location/LFX8ZX37V01JD/services,
+18,C&L cycle Villeneuve,1,0,1,1,"75 Rue Villeneuve O, Montréal, QC H2T 2R4",H2T 2R4,Montréal,QC,CA,45.5210732808975,-73.59015359066903,514-284-4932,https://www.clcycle.ca/fc/,Organise des sorties de groupe
+19,Émile Bicyclettes,1,0,1,0,"3730 Av. du Parc, Montréal, QC H2X 2J1",H2X 2J1,Montréal,QC,CA,45.51218199174646,-73.57770200949561,514-303-2002,https://www.emilebicyclettes.com/,
+20,E2-Sport,1,0,1,0,"1950 R. Notre Dame O, Montréal, QC H3J 1M8",H3J 1M8,Montréal,QC,CA,45.487895405212456,-73.56986005441331,514-934-1010,https://www.e2-sport.ca/,
+21,Cycle Technique,1,0,1,1,"788 Av. Atwater, Montréal, QC H4C 2G9",H4C 2G9,Montréal,QC,CA,45.48622382857847,-73.58010240904429,514-937-3626,https://www.cycletechnique.com/fc/,
+22,Fitz Montréal,0,1,0,0,"1251 Rue Rachel E, Montréal, QC H2J 2J9",H2J 2J9,Montréal,QC,CA,45.52790672707601,-73.57322658273873,438-792-6480,https://fitzmontreal.com/,
+23,Ma bicyclette,0,1,0,0,"2985 rue Saint-Patrick
+Montréal, Québec H3K 1B9",H3K 1B9,Montréal,QC,CA,45.47812060624096,-73.57467999014773,514-317-6306,https://mabicyclette.ca/,
+24,Allô Vélo,1,1,1,0,"141 Rue du Shannon, Montréal, QC H3C 1V3",H3C 1V3,Montréal,QC,CA,45.494316257420756,-73.55743187996234,514-937-8356,https://velolifestyle.com/,

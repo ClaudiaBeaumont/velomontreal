@@ -1,0 +1,47 @@
+Je veux que tu modifies mon projet "Répertoire Vélo" (HTML + JS vanilla, pas de framework) pour intégrer un répertoire géolocalisé à partir d’un fichier CSV que je fournis.
+
+Fichier CSV:
+- Je vais uploader dans le projet le fichier: "Réparateurs et location de vélos Montréal (vélo Montréal) - Feuille 2.csv"
+- Tu dois le lire au runtime (fetch) depuis le projet (ex: /data/commerces.csv ou le nom exact du fichier). Si le nom contient des espaces ou accents, renomme-le côté projet en "commerces.csv" et utilise ce chemin.
+
+Objectif UX sur la page d’accueil:
+1) Ajouter un menu déroulant avec 4 options de service:
+   - Réparation (repair)
+   - Location (rental)
+   - Vente (sale)
+   - Entreposage (storage)
+2) Champ de saisie: code postal de l’usager (Canada) avec placeholder indiquant "rayon de 15 km".
+3) Quand l’usager soumet le formulaire:
+   - Normaliser le code postal (majuscules, enlever espaces).
+   - Valider le format canadien A1A1A1.
+   - Géocoder le code postal en latitude longitude en utilisant Nominatim OpenStreetMap (fetch HTTP).
+   - Mettre en cache le résultat du géocodage dans localStorage (clé basée sur le code postal normalisé) pour éviter de requêter Nominatim à répétition.
+   - Calculer la distance (Haversine) entre l’usager et chaque commerce du CSV (les commerces ont déjà lat et lon).
+   - Filtrer les commerces à 15 km ou moins.
+   - Filtrer par service selon le menu déroulant (colonne 0/1 correspondante: repair, rental, sale, storage).
+   - Trier par distance croissante.
+4) Afficher les résultats directement sous l’engin de recherche sur la page d’accueil (pas de redirection vers une page Répertoire pour l’instant).
+   - Affichage minimal: nom, adresse, code postal, téléphone si présent, site web si présent, distance en km (1 décimale).
+   - Afficher un message clair si aucun résultat dans 15 km.
+   - Afficher un message d’erreur clair si code postal invalide ou géocodage impossible.
+
+Contraintes techniques:
+- Ne pas ajouter de dépendance lourde. Vanilla JS seulement.
+- Ajouter une fonction de parsing CSV robuste (gérer les virgules et guillemets).
+- Convertir correctement les types: lat lon en nombre, flags repair rental sale storage en nombre.
+- Corriger automatiquement une longitude positive si détectée pour Montréal (si lon > 0 et city contient Montréal, alors lon = -lon). Loguer un warning dans console quand tu corriges.
+- Le code doit rester lisible: fonctions séparées loadCSV, parseCsvLine, geocodePostalCode, haversineKm, filterAndRankShops, renderResults.
+
+Pages uniques par commerce (pour plus tard):
+- Préparer la structure dès maintenant en rendant chaque résultat cliquable.
+- Au clic, naviguer vers une route simple (ex: ?shop=ID ou #/shop/ID) et afficher une page détail minimaliste (nom, services, coordonnées, contact).
+- Garde cette partie simple et sans backend, mais fais en sorte que l’architecture soit prête.
+
+Livrable:
+- Mettre à jour mon fichier HTML existant en gardant mon style actuel (config couleurs, nav, hero).
+- Ajouter la section "Résultats" sous le formulaire sur l’accueil.
+- Ajouter le dropdown 4 options.
+- Lire les données depuis commerces.csv.
+- Tout doit fonctionner dans Replit en preview.
+
+Commence par renommer le CSV uploadé en "commerces.csv" dans un dossier /data si nécessaire, puis implémente les changements.

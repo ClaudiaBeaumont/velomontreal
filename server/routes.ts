@@ -78,16 +78,19 @@ export async function registerRoutes(
     }
   });
 
-  // Seed data from CSV if database is empty
+  // Seed data from CSV - reload if we have fewer than expected shops
   const seedData = async () => {
     const count = await storage.countShops();
-    if (count === 0) {
-      console.log("Seeding database from CSV...");
-      const shops = loadShopsFromCSV();
-      for (const shop of shops) {
+    const csvShops = loadShopsFromCSV();
+    
+    // If database has fewer shops than CSV, clear and reseed
+    if (count < csvShops.length) {
+      console.log(`Database has ${count} shops but CSV has ${csvShops.length}. Reseeding...`);
+      await storage.clearShops();
+      for (const shop of csvShops) {
         await storage.createShop(shop);
       }
-      console.log(`Database seeded with ${shops.length} shops.`);
+      console.log(`Database reseeded with ${csvShops.length} shops.`);
     } else {
       console.log(`Database already has ${count} shops, skipping seed.`);
     }

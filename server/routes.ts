@@ -15,6 +15,11 @@ export async function registerRoutes(
   httpServer: Server,
   app: Express
 ): Promise<Server> {
+  // Health check endpoint for deployment
+  app.get("/health", (_req, res) => {
+    res.status(200).json({ status: "ok" });
+  });
+
   // Get shops with optional service filter (only approved)
   app.get(api.shops.list.path, async (req, res) => {
     const service = req.query.service as string | undefined;
@@ -113,24 +118,26 @@ export async function registerRoutes(
     res.json(shop);
   });
 
-  // Seed data from CSV - reload if we have fewer than expected shops
-  const seedData = async () => {
-    const count = await storage.countShops();
-    const csvShops = loadShopsFromCSV();
-    
-    if (count < csvShops.length) {
-      console.log(`Database has ${count} shops but CSV has ${csvShops.length}. Reseeding...`);
-      await storage.clearShops();
-      for (const shop of csvShops) {
-        await storage.createShop(shop, "approved");
+  // Seed data from CSV after server starts - don't block startup
+  setImmediate(async () => {
+    try {
+      const count = await storage.countShops();
+      const csvShops = loadShopsFromCSV();
+      
+      if (count < csvShops.length) {
+        console.log(`Database has ${count} shops but CSV has ${csvShops.length}. Reseeding...`);
+        await storage.clearShops();
+        for (const shop of csvShops) {
+          await storage.createShop(shop, "approved");
+        }
+        console.log(`Database reseeded with ${csvShops.length} shops.`);
+      } else {
+        console.log(`Database already has ${count} shops, skipping seed.`);
       }
-      console.log(`Database reseeded with ${csvShops.length} shops.`);
-    } else {
-      console.log(`Database already has ${count} shops, skipping seed.`);
+    } catch (err) {
+      console.error("Error seeding data:", err);
     }
-  };
-
-  seedData().catch(console.error);
+  });
 
   return httpServer;
 }
